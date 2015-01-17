@@ -114,6 +114,7 @@ typedef struct KEContext{
 	AVFrame *pFrameEncode;
 	int keyframenum;
 	int framenum;
+	int frametime;//ms
 	int videoid;
 	char outfilename[KE_STRLEN];
 	char outfilefolder[KE_STRLEN];

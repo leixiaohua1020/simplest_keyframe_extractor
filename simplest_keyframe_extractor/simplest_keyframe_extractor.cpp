@@ -391,7 +391,7 @@ int main(int argc, char* argv[])
 			break;
 		}
 	if(videoindex==-1){
-		printf("Didn't find a video stream.\n");
+		printf("Couldn't find a video stream.\n");
 		return -1;
 	}
 	pCodecCtx=pFormatCtx->streams[videoindex]->codec;
@@ -401,7 +401,7 @@ int main(int argc, char* argv[])
 		return -1;
 	}
 	if(avcodec_open2(pCodecCtx, pCodec,NULL)<0){
-		printf("Could not open codec.\n");
+		printf("Couldn't open codec.\n");
 		return -1;
 	}
 	//FIX
@@ -462,12 +462,28 @@ int main(int argc, char* argv[])
 				pKECtx->method->extract(pKECtx,pCodecCtx,pFrame,&iskeyframe,&framenum);
 				
 				pKECtx->framenum=framenum;
+				
+				//Additional info
+				float framerate=av_q2d(pFormatCtx->streams[videoindex]->r_frame_rate);
+				//secs
+				pKECtx->frametime=(float)framenum/framerate;
+
+
+
 				//is keyframe
 				if(iskeyframe==1){
-					
+					//Small fix
+					int tns, thh, tmm, tss;
+					char timestr[KE_STRLEN]={0};
+					tns = pKECtx->frametime;
+					thh  = tns / 3600;
+					tmm  = (tns % 3600) / 60;
+					tss  = (tns % 60);
+					sprintf(timestr,"%02d:%02d:%02d",thh,tmm,tss);
+
 					sws_scale(img_convert_ctx2, (const uint8_t* const*)pFrame->data, pFrame->linesize, 0, pCodecCtx->height, pKECtx->pFrameEncode->data, pKECtx->pFrameEncode->linesize);
-						
-					printf("[keyframe]index: %5d  number:%8d ",pKECtx->keyframenum,pKECtx->framenum);
+					
+					printf("[key]%5d [number]%7d [time]%s ",pKECtx->keyframenum,pKECtx->framenum,timestr);
 					if(ke_encode_frame(pKECtx)!=0){
 						printf("[encode]Failed  ");
 						return -1;

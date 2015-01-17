@@ -60,7 +60,7 @@ int ke_record_mysql_init(KEContext **pKECtx){
 	char* confpath=privCtx->confpath;
 	char* dbuser=privCtx->dbuser;
 	char* dbpasswd=privCtx->dbpasswd;
-	char* dbip=privCtx->dbip;//注意：不能是“localhost”
+	char* dbip=privCtx->dbip;//cannot write "localhost"
 	char* dbname=privCtx->dbname;
 	//Init
 	privCtx->con = mysql_init((MYSQL*) 0); 
@@ -91,7 +91,6 @@ int ke_record_mysql_save(KEContext *pKECtx){
 	char query[KE_STRLEN]={0};
 	int t;
 	int count = 0;
-	//返回值
 	int rt;
 	KEMysqlContext *privCtx=(KEMysqlContext *)pKECtx->record->priv_data;
 
@@ -140,14 +139,22 @@ int ke_record_txt_init(KEContext **pKECtx){
 		return -1;
 	}
 	fprintf(privCtx->fp,"[Video URL]%s\n",(*pKECtx)->infilepath); 
-	fprintf(privCtx->fp,"filename,keyframenum,framenum\n"); 
+	fprintf(privCtx->fp,"filename,keyframenum,framenum,time\n"); 
 	return 0;
 }
 
 //Save info use TXT
 int ke_record_txt_save(KEContext *pKECtx){
 	KETxtContext *privCtx=(KETxtContext *)pKECtx->record->priv_data;
-	fprintf(privCtx->fp,"%s,%d,%d\n",pKECtx->outfilename,pKECtx->keyframenum,pKECtx->framenum); 
+	int tns, thh, tmm, tss;
+	char timestr[KE_STRLEN]={0};
+	tns = pKECtx->frametime;
+	thh  = tns / 3600;
+	tmm  = (tns % 3600) / 60;
+	tss  = (tns % 60);
+	sprintf(timestr,"%02d:%02d:%02d",thh,tmm,tss);
+
+	fprintf(privCtx->fp,"%s,%d,%d,%s\n",pKECtx->outfilename,pKECtx->keyframenum,pKECtx->framenum,timestr); 
 	return 0;
 }
 
